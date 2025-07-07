@@ -2,10 +2,13 @@ import { useAccount, useCoState } from "jazz-tools/react"
 import "./App.css"
 import { co, Group } from "jazz-tools"
 import { TestContainer, TestItem, createTestItem } from "./schema"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import { FixedSizeList as List } from "react-window"
 
 export default function App() {
   const { me } = useAccount()
+  const [scrollToIndex, setScrollToIndex] = useState("")
+  const listRef = useRef<List>(null)
 
   if (!me) return
 
@@ -100,6 +103,37 @@ export default function App() {
     )
   }
 
+  // Function to scroll to a specific index
+  const handleScrollToIndex = () => {
+    const index = parseInt(scrollToIndex) - 1 // Convert to 0-based index
+    if (
+      listRef.current &&
+      !isNaN(index) &&
+      index >= 0 &&
+      index < items.length
+    ) {
+      listRef.current.scrollToItem(index, "center")
+    }
+  }
+
+  // Row component for virtual list
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number
+    style: React.CSSProperties
+  }) => {
+    const item = items[index]
+    return (
+      <div style={style}>
+        <div style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+          {item ? `Item ${index + 1}: ${item.id}` : "Loading..."}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <div style={{ marginBottom: "20px" }}>
@@ -107,12 +141,52 @@ export default function App() {
         <p>Share this URL to collaborate: {window.location.href}</p>
       </div>
       <h3>Items ({items.length}):</h3>
-      {/* <ul>
-        {items.map((item) => {
-          if (!item) return <div>Loading...</div>
-          return <li key={item.id}>{item.id}</li>
-        })}
-      </ul> */}
+      <div
+        style={{
+          marginBottom: "10px",
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+        }}
+      >
+        <input
+          type="number"
+          value={scrollToIndex}
+          onChange={(e) => setScrollToIndex(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleScrollToIndex()}
+          placeholder="Enter item number..."
+          style={{
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            width: "200px",
+          }}
+        />
+        <button
+          onClick={handleScrollToIndex}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Scroll to Item
+        </button>
+      </div>
+      <div style={{ height: "400px", width: "100%" }}>
+        <List
+          ref={listRef}
+          height={400}
+          itemCount={items.length}
+          itemSize={50}
+          width="100%"
+        >
+          {Row}
+        </List>
+      </div>
     </div>
   )
 }
