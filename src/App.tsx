@@ -54,8 +54,8 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       console.log("Interval running every 100ms")
-      if (containerId && items && items.length < 30000) {
-        // Add 10 items to the list when length is less than 30,000
+      if (containerId && items && items.length < 40000) {
+        // Add 10 items to the list when length is less than 40,000
         console.log(`Current items: ${items.length}, adding 10 more items`)
         // Create all 10 items first
         const newItems = []
@@ -70,7 +70,7 @@ export default function App() {
         // Push all items in batch
         items.push(...newItems)
       }
-    }, 100)
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [containerId, items])
