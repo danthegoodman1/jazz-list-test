@@ -4,10 +4,12 @@ import { co, Group } from "jazz-tools"
 import { TestContainer, TestItem, createTestItem } from "./schema"
 import { useEffect, useState, useRef } from "react"
 import { FixedSizeList as List } from "react-window"
+import QRCode from "qrcode"
 
 export default function App() {
   const { me } = useAccount()
   const [scrollToIndex, setScrollToIndex] = useState("")
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState("")
   const listRef = useRef<List>(null)
 
   if (!me) return
@@ -34,7 +36,7 @@ export default function App() {
       const newContainer = TestContainer.create(
         {
           title: "Test Container",
-          items: co.list(TestItem).create([], { owner: me._owner }),
+          items: co.list(TestItem).create([], { owner: group }),
           totalItems: 0,
           createdAt: Date.now(),
         },
@@ -56,7 +58,7 @@ export default function App() {
       console.log("Interval running every 100ms")
       if (containerId && items && items.length < 40000) {
         // Add 10 items to the list when length is less than 40,000
-        console.log(`Current items: ${items.length}, adding 10 more items`)
+        console.log(`Current items: ${items.length}, adding more items`)
         // Create all 10 items first
         const newItems = []
         for (let i = 0; i < 1000; i++) {
@@ -74,6 +76,27 @@ export default function App() {
 
     return () => clearInterval(interval)
   }, [containerId, items])
+
+  // Generate QR code when we have a container ID
+  useEffect(() => {
+    if (containerId) {
+      const currentUrl = window.location.href
+      QRCode.toDataURL(currentUrl, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
+      })
+        .then((url) => {
+          setQrCodeDataUrl(url)
+        })
+        .catch((err) => {
+          console.error("Error generating QR code:", err)
+        })
+    }
+  }, [containerId])
 
   // If we don't have an id yet, show loading while redirect happens
   if (!containerId) {
@@ -139,6 +162,21 @@ export default function App() {
       <div style={{ marginBottom: "20px" }}>
         <h2>Container: {containerId}</h2>
         <p>Share this URL to collaborate: {window.location.href}</p>
+        {qrCodeDataUrl && (
+          <div style={{ marginTop: "10px" }}>
+            <p>Or scan this QR code:</p>
+            <img
+              src={qrCodeDataUrl}
+              alt="QR Code for sharing"
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                padding: "10px",
+                backgroundColor: "white",
+              }}
+            />
+          </div>
+        )}
       </div>
       <h3>Items ({items.length}):</h3>
       <div
