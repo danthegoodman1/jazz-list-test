@@ -1,13 +1,20 @@
 import { co, z } from "jazz-tools"
 
 // Define a simple test item schema
-export const TestItem = co.map({
-  itemId: z.number(),
-  name: z.string(),
-  value: z.number(),
-  timestamp: z.number(),
-  description: z.string(),
-})
+export const TestItem = co
+  .map({
+    itemId: z.number(),
+    name: z.string(),
+    value: z.number(),
+    timestamp: z.number(),
+    description: z.string(),
+    newThing: z.string(),
+  })
+  .withMigration((item) => {
+    if (item.newThing === undefined) {
+      item.newThing = "default value"
+    }
+  })
 
 // Define the main container with a CoList of test items
 export const TestContainer = co.map({
@@ -29,5 +36,6 @@ export function createTestItem(itemId: number) {
     value: Math.floor(Math.random() * 1000),
     timestamp: Date.now() + itemId,
     description: `This is test item number ${itemId} with random data for stress testing`,
+    newThing: `New Thing ${itemId}`,
   }
 }

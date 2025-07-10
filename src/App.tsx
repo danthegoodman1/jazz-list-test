@@ -151,7 +151,9 @@ export default function App() {
     return (
       <div style={style}>
         <div style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
-          {item ? `Item ${index + 1}: ${item.id}` : "Loading..."}
+          {item
+            ? `Item ${index + 1}: ${item.id} '${item.newThing}'`
+            : "Loading..."}
         </div>
       </div>
     )
